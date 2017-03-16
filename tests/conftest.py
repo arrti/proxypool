@@ -5,8 +5,7 @@ import sys
 
 # add project path to sys.path in case 'proxypool' was not installed
 current = Path(__file__).parent.parent
-parent = current.parent
-path = str(current) if 'ProxyPool' in str(current) else str(parent)
+path = str(current)
 sys.path.append(path)
 
 
