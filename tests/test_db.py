@@ -44,12 +44,12 @@ def test_db_cache(db,tmpdir):
     content = p.read()
     assert content == 'proxy pool'
 
-    mtime = int(os.path.getmtime(p))
+    mtime = int(os.path.getmtime(str(p)))
     db.set_cache('proxypool', content, mtime)
     assert db.get_cache('proxypool') == (content.encode('utf-8'), str(mtime).encode('utf-8'))
 
     content2 = p.read()
-    mtime2 = int(os.path.getmtime(p))
+    mtime2 = int(os.path.getmtime(str(p)))
     db.set_cache('proxypool', content2, mtime2, 6)
     time.sleep(2)
     assert db.get_cache('proxypool') == (content.encode('utf-8'), str(mtime).encode('utf-8'))
@@ -58,7 +58,7 @@ def test_db_cache(db,tmpdir):
 
     p.write('is a python app')
     content3 = p.read()
-    mtime3 = int(os.path.getmtime(p))
+    mtime3 = int(os.path.getmtime(str(p)))
     assert content3 == 'is a python app'
     db.set_cache('proxypool', content3, mtime3, 6)
     time.sleep(4)
