@@ -16,7 +16,7 @@
 * aiohttp
 * bs4
 * lxml
-* yaml
+* pyyaml
 * requests
 * selenium
 
