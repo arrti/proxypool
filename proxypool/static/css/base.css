@@ -1,0 +1,39 @@
+html,
+body {
+  height: 100%;
+  background-color: #333;
+}
+body {
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 1px 3px rgba(0,0,0,.5);
+}
+
+/*.container{
+   display:table;
+   height:100%; 
+}*/
+
+.inner-center {
+  position: absolute;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  -moz-transform:  translateY(-50%);
+  -ms-transform:  translateY(-50%);
+  -o-transform:  translateY(-50%);
+  transform:  translateY(-50%);
+}
+
+.title {
+  padding: 60px;
+}
+
+.offset-icon {
+  position: relative;
+  top: 30px;
+}
+
+.footer {
+  position: fixed;
+  bottom: 0;
+}
