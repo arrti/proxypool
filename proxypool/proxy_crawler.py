@@ -8,7 +8,7 @@ class ProxyCrawler(object):
     """Crawl proxies according to the rules.
     """
 
-    def __init__(self, proxies, rules=None, flag=None):
+    def __init__(self, proxies, rules=None):
         """Crawler init.
         Args:
             proxies: aysncio.Queue object
@@ -16,7 +16,7 @@ class ProxyCrawler(object):
             flag: stop flag for page downloading
         """
         self._proxies = proxies
-        self._stop_flag = flag if flag else asyncio.Event() # stop flag for crawler, not for validator
+        self._stop_flag = asyncio.Event() # stop flag for crawler, not for validator
         self._pages = asyncio.Queue()
         self._rules = rules if rules else CrawlerRuleBase.__subclasses__()
 
@@ -100,20 +100,20 @@ class ProxyCrawler(object):
         logger.warning('proxy crawler was stopping...')
 
     def reset(self):
-        self._stop_flag.clear() # clear crawler's stop flag
+        self._stop_flag = asyncio.Event() # once setted, create a new Event object
         logger.debug('proxy crawler reseted')
 
 
-def proxy_crawler_run(proxies, rules = None, flag = None):
-    pc = ProxyCrawler(proxies, rules, flag)
+def proxy_crawler_run(proxies, rules = None):
+    pc = ProxyCrawler(proxies, rules)
     loop = asyncio.get_event_loop()
     try:
         loop.run_until_complete(pc.start())
     finally:
         loop.close()
 
-def proxy_crawler_test_run(proxies, count, rules = None, flag = None):
-    pc = ProxyCrawler(proxies, rules, flag)
+def proxy_crawler_test_run(proxies, count, rules = None):
+    pc = ProxyCrawler(proxies, rules)
     loop = asyncio.get_event_loop()
     try:
         loop.run_until_complete(pc.start())

@@ -12,7 +12,7 @@ class ProxyValidator(object):
     """Validate proxy before put it in proxy pool and validate proxies in pool regularly.
     """
 
-    def __init__(self, conn, flag=None):
+    def __init__(self, conn):
         self.validate_url = 'http://www.baidu.com/' # without headers should visit 'http://' not 'https://'
         # self._stop_flag = flag if flag else asyncio.Event()
         self._conn = conn

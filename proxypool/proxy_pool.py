@@ -65,7 +65,6 @@ class ProxyPool(object):
         """
         conn = rc()
         loop = asyncio.get_event_loop()
-        flag = asyncio.Event()
         proxies = asyncio.Queue()
         crawler = ProxyCrawler(proxies)
         validator = ProxyValidator(conn)
@@ -75,7 +74,7 @@ class ProxyPool(object):
                 continue
 
             logger.debug('extend proxy pool started')
-
+            flag = asyncio.Event()
             try:
                 loop.run_until_complete(asyncio.gather(
                     ProxyPool.crawler_start(crawler, validator, proxies, flag),
@@ -86,8 +85,7 @@ class ProxyPool(object):
 
             logger.debug('extend proxy pool finished')
             time.sleep(check_interval_time)
-            flag.clear()
-            crawler.reset() # clear flags
+            crawler.reset() # create new flag
 
 
 def proxy_pool_run():
