@@ -36,7 +36,7 @@ class RedisClient(object):
             the length of proxy list.
 
         Returns:
-            proxy list, like: ['175.155.24.67:808', '112.103.59.215:8118'].
+            proxy list, like: [b'175.155.24.67:808', b'112.103.59.215:8118'].
         """
         proxies = self._db.lrange('proxy_pool', 0, count - 1)
         self._db.ltrim('proxy_pool', count, -1)
