@@ -1,7 +1,7 @@
 # A python async proxy crawler and proxy pool
 [![Build Status](https://travis-ci.org/arrti/proxypool.svg?branch=master)](https://travis-ci.org/arrti/proxypool)
 
-使用python asyncio实现的异步代理爬虫和代理池，根据规则爬取代理网站上的免费代理，在验证其有效后存入redis中，
+使用python asyncio实现的异步并发代理爬虫和代理池，根据规则爬取代理网站上的免费代理，在验证其有效后存入redis中，
 定期扩展代理的数量并检验池中代理的有效性，及时移除失效的代理。
 同时用aiohttp实现了一个server，通过访问相应的url来从代理池中获取代理。
 
@@ -49,6 +49,8 @@
 * `console_logger`：同时输出到stdout和`file_logger`的日志文件中，用于调试；
 * `file_logger`：默认输出到`/tmp/proxy_pool.log`文件；
 * `server_logger`：server的`logger`，额外记录了远程请求的地址，默认输出到`/tmp/proxy_pool_server.log`文件。
+
+日志的I/O操作也不会阻塞事件循环。
 
 ### 爬虫规则
 位于`proxypool/rules`目录下。通过元类`rule_base.CrawlerRuleMeta`和基类`rule_base.CrawlerRuleBase`来管理爬虫的规则类，规则类的定义如下：
@@ -108,3 +110,7 @@ Linux下可以使用supervisord来管理python进程，首先修改`supervisord/
 执行`pytest tests`运行测试，可选参数：
 * `--runslow`运行耗时较长的测试；
 * `--runptjs`运行需要Phantomjs的测试。
+
+## 更新
+* 2017.6.1  
+现在可以正确实现并发了。能够并发地爬取所有的代理网站、验证代理的有效性，日志的I/O操作也不会阻塞事件循环了。按照现有的5个规则爬取一次这5个代理网站现在用时**不到3分钟**，而之前仅爬取西祠就需要1个小时。
