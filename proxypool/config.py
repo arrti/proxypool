@@ -22,10 +22,13 @@ upper_limit_ratio = 0.85
 # check and validate
 check_cycle_time = 900     # the cycle of check proxies count
 check_interval_time = 600  # the time between crawler finished and next check
-validate_cycle_time = 1800 # the cycle of validate proxies in pool
+validate_cycle_time = 600 # the cycle of validate proxies in pool
 validate_upper_limit = 200
 validate_ratio = 0.25      # validated proxies ratio in pool each time
 validate_timeout = 3
+
+# coroutines
+CORO_COUNT = 50
 
 # crawler
 phantomjs_path = '/home/shrike/software/phantomjs/bin/phantomjs'
