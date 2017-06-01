@@ -23,7 +23,7 @@ class ProxyPool(object):
             flag: asyncio.Event object, stop flag for 'crawler_stop' function.
         """
         logger.debug('proxy crawler started')
-
+        logger.debug('validator started')
         valid = asyncio.ensure_future(validator.start(proxies))
         await crawler.start()
         await proxies.join()
