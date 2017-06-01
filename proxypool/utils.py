@@ -11,16 +11,75 @@ import logging
 import logging.config
 import yaml
 from pathlib import Path
+from collections import namedtuple
+from functools import wraps
 
 
 PROJECT_ROOT = Path(__file__).parent
-# set logger for proxy crawler and alidator
-logging.config.dictConfig(yaml.load(open(str(PROJECT_ROOT / 'logging.yaml'), 'r'))) # load config from YAML file
-if verbose:
-    logger = logging.getLogger('console_logger') # output to both stdout and file
-else:
-    logger = logging.getLogger('file_logger')
 
+def _log_async(func):
+    """Send func to be executed by thread pool executor of event loop with 'run_in_executor' method.
+
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        print('logging async')
+        loop = asyncio.get_event_loop()
+        return loop.run_in_executor (None, func, *args, **kwargs)
+
+    return wrapper
+
+class _LoggerAsync:
+    """Logger's async adapter.
+
+    Logging were executed in a thread pool executor to avoid blocking the event loop.
+
+    """
+
+    def __init__(self):
+        logging.config.dictConfig(
+            yaml.load(open(str(PROJECT_ROOT / 'logging.yaml'), 'r')))  # load config from YAML file
+
+        if verbose:
+            self._logger = logging.getLogger('console_logger')  # output to both stdout and file
+        else:
+            self._logger = logging.getLogger('file_logger')
+
+    def __getattr__(self, name):
+        if hasattr(self._logger, name):
+            return getattr(self._logger, name)
+        else:
+            msg = 'logger object has no attribute {!r}'
+            raise AttributeError(msg.format(name))
+
+    @_log_async
+    def debug(self, msg, *args, **kwargs):
+        self._logger.debug(msg, *args, **kwargs)
+
+    @_log_async
+    def info(self, msg, *args, **kwargs):
+        self._logger.info(msg, *args, **kwargs)
+
+    @_log_async
+    def warning(self, msg, *args, **kwargs):
+        self._logger.warning(msg, *args, **kwargs)
+
+    @_log_async
+    def error(self, msg, *args, **kwargs):
+        self._logger.error(msg, *args, **kwargs)
+
+    @_log_async
+    def exception(self, msg, *args, exc_info=True, **kwargs):
+        self._logger.exception(msg, *args, exc_info, **kwargs)
+
+    @_log_async
+    def critical(self, msg, *args, **kwargs):
+        self._logger.critical(msg, *args, **kwargs)
+
+logger = _LoggerAsync()
+
+Result = namedtuple('Result', 'content rule')
 
 def decode_html(html_string):
     """Use bs4 to decode html file.
@@ -34,41 +93,39 @@ def decode_html(html_string):
             ', '.join(converted.tried_encodings))
     return converted.unicode_markup
 
-async def page_download(urls, pages, flag):
+async def page_download(url_gen, pages, flag):
     """Download web page with aiohttp.
 
     Args:
-        urls: url generator for next web page.
+        url_gen: url generator for next web page.
         pages: asyncio.Queue object, save downloaded web pages.
         flag: asyncio.Event object, stop flag.
     """
-    url_generator = urls
     async with aiohttp.ClientSession() as session:
-        for url in url_generator:
+        for url in url_gen:
             if flag.is_set():
                 break
 
             await asyncio.sleep(uniform(delay - 0.5, delay + 1))
-            logger.debug('crawling proxy web page {0}'.format(url))
+            logger.debug('crawling proxy web page {0}'.format(url.content))
             try:
-                async with session.get(url, headers=headers, timeout=10) as response:
+                async with session.get(url.content, headers=headers, timeout=10) as response:
                     page = await response.text()
                     parsed = html.fromstring(decode_html(page))
-                    await pages.put(parsed)
-                    url_generator.send(parsed)
+                    await pages.put(Result(parsed, url.rule))
+                    url_gen.send(parsed)
             except StopIteration:
                 break
             except asyncio.TimeoutError:
-                logger.error('crawling {0} timeout'.format(url))
                 continue # TODO: use a proxy
             except Exception as e:
                 logger.error(e)
 
-async def page_download_phantomjs(urls, pages, element, flag):
+async def page_download_phantomjs(url_gen, pages, element, flag):
     """Download web page with PhantomJS.
 
     Args:
-        urls: url generator for next web page.
+        url_gen: url generator for next web page.
         pages: asyncio.Queue object, save downloaded web pages.
         element: element for PhantomJS to check if page was loaded.
         flag: asyncio.Event object, stop flag.
@@ -76,26 +133,24 @@ async def page_download_phantomjs(urls, pages, element, flag):
     dcap = dict(DesiredCapabilities.PHANTOMJS)
     dcap["phantomjs.page.settings.userAgent"] = headers
     browser = webdriver.PhantomJS(executable_path=phantomjs_path, desired_capabilities=dcap)
-    url_generator = urls
-    for url in url_generator:
+    for url in url_gen:
         if flag.is_set():
             break
 
         await asyncio.sleep(uniform(delay - 0.5, delay + 1))
-        logger.debug('phantomjs was crawling proxy web page {0}'.format(url))
+        logger.debug('phantomjs was crawling proxy web page {0}'.format(url.content))
         try:
             with timeout(10):
-                browser.get(url)
+                browser.get(url.content)
                 while browser.page_source.find(element) == -1:
                     await asyncio.sleep(random())
 
             parsed = html.fromstring(decode_html(browser.page_source))
-            await pages.put(parsed)
-            url_generator.send(parsed)
+            await pages.put(Result(parsed, url.rule))
+            url_gen.send(parsed)
         except StopIteration:
             break
         except asyncio.TimeoutError:
-            logger.error('phantomjs was crawling {0} timeout'.format(url))
             continue  # TODO: use a proxy
         except Exception as e:
             logger.error(e)
