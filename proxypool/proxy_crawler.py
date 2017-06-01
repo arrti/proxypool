@@ -1,5 +1,5 @@
 from proxypool.rules.rule_base import CrawlerRuleBase
-from proxypool.utils import page_download, page_download_phantomjs, logger
+from proxypool.utils import page_download, page_download_phantomjs, logger, Result
 import asyncio
 from itertools import compress
 
@@ -20,11 +20,11 @@ class ProxyCrawler(object):
         self._pages = asyncio.Queue()
         self._rules = rules if rules else CrawlerRuleBase.__subclasses__()
 
-    async def _parse_page(self, rule):
+    async def _parse_page(self):
         while 1:
             page = await self._pages.get()
 
-            await self._parse_proxy(rule, page)
+            await self._parse_proxy(page.rule, page.content)
 
             self._pages.task_done()
 
@@ -63,37 +63,46 @@ class ProxyCrawler(object):
         Returns:
             url of next page, like: 'http://www.example.com/page/2'.
         """
-        page = yield rule.start_url
+        page = yield Result(rule.start_url, rule)
         for i in range(2, rule.page_count + 1):
             if rule.urls_format:
                 yield
-                yield rule.urls_format.format(rule.start_url, i)
+                yield Result(rule.urls_format.format(rule.start_url, i), rule)
             elif rule.next_page_xpath:
                 if page is None:
                     break
                 next_page = page.xpath(rule.next_page_xpath)
                 if next_page:
                     yield
-                    page = yield rule.next_page_host + str(next_page[0]).strip()
+                    page = yield Result(rule.next_page_host + str(next_page[0]).strip(), rule)
                 else:
                     break
 
+    async def _parser(self, count):
+        to_parse = [self._parse_page() for _ in range(count)]
+        await asyncio.wait(to_parse)
+
+    async def _downloader(self, rule):
+        if not rule.use_phantomjs:
+            await page_download(ProxyCrawler._url_generator(rule), self._pages,
+                                self._stop_flag)
+        else:
+            await page_download_phantomjs(ProxyCrawler._url_generator(rule), self._pages,
+                                          rule.phantomjs_load_flag, self._stop_flag)
+
+    async def _crawler(self, rule):
+        logger.debug('{0} crawler started'.format(rule.__rule_name__))
+
+        parser = asyncio.ensure_future(self._parser(rule.page_count))
+        await self._downloader(rule)
+        await self._pages.join()
+        parser.cancel()
+
+        logger.debug('{0} crawler finished'.format(rule.__rule_name__))
+
     async def start(self):
-        for rule in self._rules:
-            parser = asyncio.ensure_future(self._parse_page(rule))
-            logger.debug('{0} crawler started'.format(rule.__rule_name__))
-
-            if not rule.use_phantomjs:
-                await page_download(ProxyCrawler._url_generator(rule), self._pages, self._stop_flag)
-            else:
-                await page_download_phantomjs(ProxyCrawler._url_generator(rule), self._pages,
-                                              rule.phantomjs_load_flag, self._stop_flag)
-
-            await self._pages.join()
-
-            parser.cancel() # cancel task when Queue was empty, or it would be blocked at Queue.get method
-
-            logger.debug('{0} crawler finished'.format(rule.__rule_name__))
+        to_crawl = [self._crawler(rule) for rule in self._rules]
+        await asyncio.wait(to_crawl)
 
     def stop(self):
         self._stop_flag.set() # set crawler's stop flag
