@@ -80,9 +80,10 @@
 * [66代理](http://www.66ip.cn/areaindex_1/1.html)
 * [秘密代理](http://www.mimiip.com/gngao/)
 
-#### 如何新增规则
-通过继承`rule_base.CrawlerRuleBase`来定义新的规则类`YourRuleClass`，放在`proxypool/rules`目录下，
-并在该目录下的`__init__.py`中添加`from . import YourRuleClass`，重启正在运行的proxy pool即可应用新的规则。
+#### 如何管理规则
+* 通过继承`rule_base.CrawlerRuleBase`来定义新的规则类`YourRuleClass`，放在`proxypool/rules`目录下，
+并在该目录下的`__init__.py`中添加`from . import YourRuleModule`，重启正在运行的proxy pool即可应用新的规则。
+* 注释掉导入语句即可禁用相应的规则。
 
 ### 运行
 * `python run_proxypool.py`
