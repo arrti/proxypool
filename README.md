@@ -19,6 +19,7 @@
 * pyyaml
 * requests
 * selenium
+* async_timeout
 
 ## 使用
 ### 参数配置
