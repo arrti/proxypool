@@ -1,6 +1,9 @@
 from .rule_base import CrawlerRuleBase
 
+
 class ProxyXici(CrawlerRuleBase):
+    """Rule for www.xicidaili.com"""
+
     start_url =  'http://www.xicidaili.com/nn/'
     page_count = 10
     # urls_format = '{0}{1}'

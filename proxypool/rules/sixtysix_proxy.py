@@ -1,6 +1,9 @@
 from .rule_base import CrawlerRuleBase
 
+
 class ProxySixtysix(CrawlerRuleBase):
+    """Rule for www.66ip.cn"""
+
     start_url = 'http://www.66ip.cn/areaindex_1/1.html' # beijing proxy
     page_count = 10
     urls_format = 'http://www.66ip.cn/areaindex_1/{1}.html' # skip start_url

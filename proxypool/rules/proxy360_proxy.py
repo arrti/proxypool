@@ -1,6 +1,9 @@
 from .rule_base import CrawlerRuleBase
 
+
 class Proxy360(CrawlerRuleBase):
+    """Rule for www.proxy360.cn"""
+
     start_url = 'http://www.proxy360.cn/default.aspx/'
     page_count = 1
 

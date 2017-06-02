@@ -1,6 +1,9 @@
 from .rule_base import CrawlerRuleBase
 
+
 class ProxyKuai(CrawlerRuleBase):
+    """Rule for www.kuaidaili.com"""
+
     start_url = 'http://www.kuaidaili.com/free/inha/'
     page_count = 10
     urls_format = '{0}{1}'

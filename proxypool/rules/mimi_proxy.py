@@ -1,6 +1,9 @@
 from .rule_base import CrawlerRuleBase
 
+
 class ProxyMimi(CrawlerRuleBase):
+    """Rule for www.mimiip.com"""
+
     start_url = 'http://www.mimiip.com/gngao/'
     page_count = 3
     urls_format = '{0}{1}'
