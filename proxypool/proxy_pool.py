@@ -1,12 +1,13 @@
-from proxypool.config import upper_limit, lower_limit, check_cycle_time, \
-                              check_interval_time, validate_cycle_time, upper_limit_ratio
+import time
+import asyncio
+from random import random
+
+from proxypool.config import (UPPER_LIMIT, LOWER_LIMIT, CHECK_CYCLE_TIME,
+                              CHECK_INTERVAL_TIME, VALIDATE_CYCLE_TIME, UPPER_LIMIT_RATIO)
 from proxypool.db import RedisClient as rc
 from proxypool.proxy_crawler import ProxyCrawler
 from proxypool.proxy_validator import ProxyValidator
 from proxypool.utils import logger
-import time
-import asyncio
-from random import random
 
 
 class ProxyPool(object):
@@ -49,7 +50,7 @@ class ProxyPool(object):
         # await asyncio.sleep(10) # TODO
         while 1:
 
-            if conn.count > int(upper_limit * upper_limit_ratio):
+            if conn.count > int(UPPER_LIMIT * UPPER_LIMIT_RATIO):
                 logger.warning('proxies count approached the upper limit')
                 crawler.stop()
                 break
@@ -61,16 +62,16 @@ class ProxyPool(object):
 
     @staticmethod
     def extend_proxy_pool():
-        """Check proxies count if need to extend proxy pool.
-        """
+        """Check proxies count if need to extend proxy pool."""
+
         conn = rc()
         loop = asyncio.get_event_loop()
         proxies = asyncio.Queue()
         crawler = ProxyCrawler(proxies)
         validator = ProxyValidator(conn)
         while 1:
-            if conn.count > lower_limit:
-                time.sleep(check_cycle_time)
+            if conn.count > LOWER_LIMIT:
+                time.sleep(CHECK_CYCLE_TIME)
                 continue
 
             logger.debug('extend proxy pool started')
@@ -84,7 +85,7 @@ class ProxyPool(object):
                 logger.error(e, exc_info=True)
 
             logger.debug('extend proxy pool finished')
-            time.sleep(check_interval_time)
+            time.sleep(CHECK_INTERVAL_TIME)
             crawler.reset() # create new flag
 
 

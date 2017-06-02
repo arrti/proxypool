@@ -1,12 +1,14 @@
-from proxypool.db import RedisClient as rc
-from proxypool.config import host, port
-from proxypool.utils import PROJECT_ROOT
 import logging
 import logging.config
-import yaml
 import asyncio
-from aiohttp import web
 import os.path
+
+import yaml
+from aiohttp import web
+
+from proxypool.db import RedisClient as rc
+from proxypool.config import HOST, PORT
+from proxypool.utils import PROJECT_ROOT
 
 
 conn = rc()
@@ -76,7 +78,7 @@ async def init(loop):
     app.router.add_static('/font/',
                           path=str(PROJECT_ROOT / 'static/font'),
                           name='font')
-    srv = await loop.create_server(app.make_handler(), host, port)
+    srv = await loop.create_server(app.make_handler(), HOST, PORT)
     return srv
 
 def setup_cache(path, name, mtime, expire=-1):
@@ -88,7 +90,7 @@ def setup_cache(path, name, mtime, expire=-1):
 def server_run():
     loop = asyncio.get_event_loop()
     try:
-        logger.debug('server started at http://{0}:{1}...'.format(host, port),
+        logger.debug('server started at http://{0}:{1}...'.format(HOST, PORT),
                      extra={'address': '', 'method': ''})
         loop.run_until_complete(init(loop))
         loop.run_forever()

@@ -1,39 +1,39 @@
 from random import choice
 
 # output to stdout
-verbose = True
+VERBOSE = True
 
 # server
-host = '127.0.0.1'
-port = '8088'
-server_on = False
+HOST = '127.0.0.1'
+PORT = '8088'
+SERVER_ON = False
 
 # redis
-redis_host = '127.0.0.1'
-redis_port = 6379
+REDIS_HOST = '127.0.0.1'
+REDIS_PORT = 6379
 
 # pool
-upper_limit = 2000
-lower_limit = 500
+UPPER_LIMIT = 2000
+LOWER_LIMIT = 500
 # when size of pool equal upper_limit*upper_limit_ratio, stopped crawl pages, but validator continued,
 # so the size of pool was still increasing
-upper_limit_ratio = 0.85
+UPPER_LIMIT_RATIO = 0.85
 
 # check and validate
-check_cycle_time = 900     # the cycle of check proxies count
-check_interval_time = 600  # the time between crawler finished and next check
-validate_cycle_time = 600 # the cycle of validate proxies in pool
-validate_upper_limit = 200
-validate_ratio = 0.25      # validated proxies ratio in pool each time
-validate_timeout = 3
+CHECK_CYCLE_TIME = 900     # the cycle of check proxies count
+CHECK_INTERVAL_TIME = 600  # the time between crawler finished and next check
+VALIDATE_CYCLE_TIME = 600 # the cycle of validate proxies in pool
+VALIDATE_UPPER_LIMIT = 200
+VALIDATE_RATIO = 0.25      # validated proxies ratio in pool each time
+VALIDATE_TIMEOUT = 3
 
 # coroutines
 CORO_COUNT = 50
 
 # crawler
-phantomjs_path = '/home/shrike/software/phantomjs/bin/phantomjs'
-delay = 5 # delay between download each web page
-user_agent = [
+PHANTOMJS_PATH = '/home/shrike/software/phantomjs/bin/phantomjs'
+DELAY = 5 # delay between download each web page
+USER_AGENT = [
     'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_0_3; en-US) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.3177.341 Safari/537.36',
     'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.3350.140 Safari/537.36',
     'Mozilla/5.0 (Windows XP; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.1125.217 Safari/537.36',
@@ -236,8 +236,8 @@ user_agent = [
     'Mozilla/5.0 (Windows XP; WOW64) Gecko/20100101 Firefox/48.0'
 ]
 
-headers = {
-    'User-Agent': choice(user_agent),
+HEADERS = {
+    'User-Agent': choice(USER_AGENT),
     'Accept-Encoding': 'gzip, deflate, sdch',
     'Accept-Language': 'zh-CN,zh;q=0.8'
 }

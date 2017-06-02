@@ -1,26 +1,26 @@
-from proxypool.config import phantomjs_path, headers, delay, verbose
-import aiohttp
 import asyncio
-from selenium import webdriver
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from async_timeout import timeout
 from random import random, uniform
-from bs4 import UnicodeDammit
-from lxml import html
 import logging
 import logging.config
-import yaml
 from pathlib import Path
 from collections import namedtuple
 from functools import wraps
+
+import yaml
+from bs4 import UnicodeDammit
+from lxml import html
+import aiohttp
+from selenium import webdriver
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from async_timeout import timeout
+
+from proxypool.config import PHANTOMJS_PATH, HEADERS, DELAY, VERBOSE
 
 
 PROJECT_ROOT = Path(__file__).parent
 
 def _log_async(func):
-    """Send func to be executed by thread pool executor of event loop with 'run_in_executor' method.
-
-    """
+    """Send func to be executed by ThreadPoolExecutor of event loop."""
 
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -30,18 +30,18 @@ def _log_async(func):
 
     return wrapper
 
+
 class _LoggerAsync:
     """Logger's async adapter.
 
     Logging were executed in a thread pool executor to avoid blocking the event loop.
-
     """
 
     def __init__(self):
         logging.config.dictConfig(
             yaml.load(open(str(PROJECT_ROOT / 'logging.yaml'), 'r')))  # load config from YAML file
 
-        if verbose:
+        if VERBOSE:
             self._logger = logging.getLogger('console_logger')  # output to both stdout and file
         else:
             self._logger = logging.getLogger('file_logger')
@@ -106,10 +106,10 @@ async def page_download(url_gen, pages, flag):
             if flag.is_set():
                 break
 
-            await asyncio.sleep(uniform(delay - 0.5, delay + 1))
+            await asyncio.sleep(uniform(DELAY - 0.5, DELAY + 1))
             logger.debug('crawling proxy web page {0}'.format(url.content))
             try:
-                async with session.get(url.content, headers=headers, timeout=10) as response:
+                async with session.get(url.content, headers=HEADERS, timeout=10) as response:
                     page = await response.text()
                     parsed = html.fromstring(decode_html(page))
                     await pages.put(Result(parsed, url.rule))
@@ -131,13 +131,13 @@ async def page_download_phantomjs(url_gen, pages, element, flag):
         flag: asyncio.Event object, stop flag.
     """
     dcap = dict(DesiredCapabilities.PHANTOMJS)
-    dcap["phantomjs.page.settings.userAgent"] = headers
-    browser = webdriver.PhantomJS(executable_path=phantomjs_path, desired_capabilities=dcap)
+    dcap["phantomjs.page.settings.userAgent"] = HEADERS
+    browser = webdriver.PhantomJS(executable_path=PHANTOMJS_PATH, desired_capabilities=dcap)
     for url in url_gen:
         if flag.is_set():
             break
 
-        await asyncio.sleep(uniform(delay - 0.5, delay + 1))
+        await asyncio.sleep(uniform(DELAY - 0.5, DELAY + 1))
         logger.debug('phantomjs was crawling proxy web page {0}'.format(url.content))
         try:
             with timeout(10):

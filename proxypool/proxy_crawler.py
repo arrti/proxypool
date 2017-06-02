@@ -1,12 +1,12 @@
-from proxypool.rules.rule_base import CrawlerRuleBase
-from proxypool.utils import page_download, page_download_phantomjs, logger, Result
 import asyncio
 from itertools import compress
 
+from proxypool.rules.rule_base import CrawlerRuleBase
+from proxypool.utils import page_download, page_download_phantomjs, logger, Result
+
 
 class ProxyCrawler(object):
-    """Crawl proxies according to the rules.
-    """
+    """Crawl proxies according to the rules."""
 
     def __init__(self, proxies, rules=None):
         """Crawler init.

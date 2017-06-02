@@ -1,20 +1,20 @@
-from proxypool.config import (validate_upper_limit, validate_ratio,
-                              validate_cycle_time, validate_timeout, CORO_COUNT)
-from proxypool.db import RedisClient as rc
-from proxypool.utils import logger
 import asyncio
-import aiohttp
 from math import ceil
 import time
 
+import aiohttp
+
+from proxypool.config import (VALIDATE_UPPER_LIMIT, VALIDATE_RATIO,
+                              VALIDATE_CYCLE_TIME, VALIDATE_TIMEOUT, CORO_COUNT)
+from proxypool.db import RedisClient as rc
+from proxypool.utils import logger
+
 
 class ProxyValidator(object):
-    """Validate proxy before put it in proxy pool and validate proxies in pool regularly.
-    """
+    """Validate proxy before put it in proxy pool and proxies in pool regularly."""
 
     def __init__(self, conn):
         self.validate_url = 'http://www.baidu.com/' # without headers should visit 'http://' not 'https://'
-        # self._stop_flag = flag if flag else asyncio.Event()
         self._conn = conn
 
 
@@ -22,7 +22,7 @@ class ProxyValidator(object):
         async with aiohttp.ClientSession() as session:
             try:
                 real_proxy = 'http://' + proxy
-                async with session.get(self.validate_url, proxy=real_proxy, timeout=validate_timeout) as resp:
+                async with session.get(self.validate_url, proxy=real_proxy, timeout=VALIDATE_TIMEOUT) as resp:
                     self._conn.put(proxy)
             except asyncio.TimeoutError:
                 pass
@@ -36,7 +36,7 @@ class ProxyValidator(object):
             proxies.task_done()
 
     async def _get_proxies(self):
-        count = min(ceil(self._conn.count * validate_ratio), validate_upper_limit)
+        count = min(ceil(self._conn.count * VALIDATE_RATIO), VALIDATE_UPPER_LIMIT)
         old_proxies = self._conn.get_list(count)
         valid_proxies = asyncio.Queue()
         for proxy in old_proxies:
@@ -71,7 +71,7 @@ def proxy_validator_run():
         except Exception as e:
             logger.error(e, exc_info=True)
         logger.debug('regular validator finished')
-        time.sleep(validate_cycle_time)
+        time.sleep(VALIDATE_CYCLE_TIME)
 
 
 if __name__ == '__main__':

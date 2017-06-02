@@ -1,25 +1,22 @@
 
-class CrawlerRuleImplementionError(Exception):
+class ProxyPoolError(Exception):
+    """proxypool error base"""
 
-    def __init__(self):
-        super().__init__()
+
+class CrawlerRuleImplementionError(ProxyPoolError):
 
     def __str__(self):
         return 'crawler rule required "start_url", "ip_xpath" and "port_xpath".'
 
-class CrawlerRuleBaseInstantiateError(Exception):
 
-    def __init__(self):
-        super().__init__()
+class CrawlerRuleBaseInstantiateError(ProxyPoolError):
 
     def __str__(self):
         return "crawler rule base class shouldn't be instantiated."
 
 
-class ProxyPoolEmptyError(Exception):
 
-    def __init__(self):
-        super().__init__()
+class ProxyPoolEmptyError(ProxyPoolError):
 
     def __str__(self):
         return 'the proxy pool was empty in a long time.'

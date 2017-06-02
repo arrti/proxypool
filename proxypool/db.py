@@ -1,6 +1,7 @@
-from proxypool.config import redis_host, redis_port
-from proxypool.errors import ProxyPoolEmptyError
 import redis
+
+from proxypool.config import REDIS_HOST, REDIS_PORT
+from proxypool.errors import ProxyPoolEmptyError
 
 
 class RedisClient(object):
@@ -9,7 +10,7 @@ class RedisClient(object):
     Manage proxies and proxy server's html files cache with redis.
     """
 
-    def __init__(self, host=redis_host, port=redis_port):
+    def __init__(self, host=REDIS_HOST, port=REDIS_PORT):
         self._db = redis.Redis(host=host, port=port)
 
     def pop(self):

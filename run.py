@@ -1,8 +1,9 @@
-from proxypool.config import server_on
+from multiprocessing import Process
+
+from proxypool.config import SERVER_ON
 from proxypool.proxy_pool import proxy_pool_run
 from proxypool.proxy_validator import proxy_validator_run
 from proxypool.proxy_server import server_run
-from multiprocessing import Process
 
 
 def main():
@@ -12,9 +13,10 @@ def main():
     pool.start()
     validator = Process(target=proxy_validator_run)
     validator.start()
-    if server_on:
+    if SERVER_ON:
         server = Process(target=server_run)
         server.start()
+
 
 if __name__ == '__main__':
     main()
