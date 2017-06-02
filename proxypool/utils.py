@@ -24,7 +24,6 @@ def _log_async(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        print('logging async')
         loop = asyncio.get_event_loop()
         return loop.run_in_executor (None, func, *args, **kwargs)
 
