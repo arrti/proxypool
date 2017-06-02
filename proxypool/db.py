@@ -22,6 +22,7 @@ class RedisClient(object):
         Raises:
             ProxyPoolEmptyError.
         """
+
         try:
             # timeout return None, otherwise return bytes type
             proxy = self._db.blpop('proxy_pool', 30)[1]
@@ -39,6 +40,7 @@ class RedisClient(object):
         Returns:
             proxy list, like: [b'175.155.24.67:808', b'112.103.59.215:8118'].
         """
+
         proxies = self._db.lrange('proxy_pool', 0, count - 1)
         self._db.ltrim('proxy_pool', count, -1)
         if proxies:
@@ -74,6 +76,7 @@ class RedisClient(object):
             mtime: modify time of cache's source file.
             expire: expire time in second, negative number for never expired.
         """
+
         mtime_name = '{0}_mtime'.format(name)
         old = self._db.get(mtime_name)
         if mtime != old:
