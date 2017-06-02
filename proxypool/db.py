@@ -27,8 +27,8 @@ class RedisClient(object):
             proxy = self._db.blpop('proxy_pool', 30)[1]
             self._db.srem('proxy_set', proxy)
             return proxy
-        except:
-            raise ProxyPoolEmptyError
+        except TypeError:
+            raise ProxyPoolEmptyError from None
 
     def pop_list(self, count=1):
         """Pop proxy list from pool.
@@ -93,5 +93,3 @@ class RedisClient(object):
     @property
     def count(self):
         return self._db.llen('proxy_pool')
-
-
