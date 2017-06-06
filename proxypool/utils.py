@@ -36,11 +36,13 @@ class _LoggerAsync:
     Logging were executed in a thread pool executor to avoid blocking the event loop.
     """
 
-    def __init__(self):
+    def __init__(self, *, is_server=False):
         logging.config.dictConfig(
             yaml.load(open(str(PROJECT_ROOT / 'logging.yaml'), 'r')))  # load config from YAML file
 
-        if VERBOSE:
+        if is_server:
+            self._logger = logging.getLogger('server_logger')
+        elif VERBOSE:
             self._logger = logging.getLogger('console_logger')  # output to both stdout and file
         else:
             self._logger = logging.getLogger('file_logger')

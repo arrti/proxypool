@@ -2,18 +2,18 @@ import logging
 import logging.config
 import asyncio
 import os.path
+import traceback
 
 import yaml
 from aiohttp import web
 
 from proxypool.db import RedisClient as rc
 from proxypool.config import HOST, PORT
-from proxypool.utils import PROJECT_ROOT
+from proxypool.utils import PROJECT_ROOT, _LoggerAsync
 
 
 conn = rc()
-logging.config.dictConfig(yaml.load(open(str(PROJECT_ROOT / 'logging.yaml'), 'r')))
-logger = logging.getLogger('server_logger')
+logger = _LoggerAsync(is_server=True)
 
 async def index(request):
     name = 'proxy_pool_index'
@@ -94,6 +94,8 @@ def server_run():
                      extra={'address': '', 'method': ''})
         loop.run_until_complete(init(loop))
         loop.run_forever()
+    except:
+        logger.error(traceback.format_exc(), extra={'address': '', 'method': ''})
     finally:
         loop.close()
 
