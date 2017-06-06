@@ -1,5 +1,6 @@
 import asyncio
 from itertools import compress
+import traceback
 
 from proxypool.rules.rule_base import CrawlerRuleBase
 from proxypool.utils import page_download, page_download_phantomjs, logger, Result
@@ -118,6 +119,8 @@ def proxy_crawler_run(proxies, rules = None):
     loop = asyncio.get_event_loop()
     try:
         loop.run_until_complete(pc.start())
+    except:
+        logger.error(traceback.format_exc())
     finally:
         loop.close()
 
@@ -127,6 +130,8 @@ def proxy_crawler_test_run(proxies, count, rules = None):
     try:
         loop.run_until_complete(pc.start())
         count.value = proxies.qsize()
+    except:
+        logger.error(traceback.format_exc())
     finally:
         loop.close()
 
