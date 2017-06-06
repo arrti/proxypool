@@ -16,6 +16,7 @@ class ProxyCrawler(object):
             rules: crawler rules of each proxy web, should be iterable object
             flag: stop flag for page downloading
         """
+        
         self._proxies = proxies
         self._stop_flag = asyncio.Event() # stop flag for crawler, not for validator
         self._pages = asyncio.Queue()
@@ -64,6 +65,7 @@ class ProxyCrawler(object):
         Returns:
             url of next page, like: 'http://www.example.com/page/2'.
         """
+
         page = yield Result(rule.start_url, rule)
         for i in range(2, rule.page_count + 1):
             if rule.urls_format:
