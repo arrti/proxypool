@@ -4,7 +4,7 @@ import logging
 import logging.config
 from pathlib import Path
 from collections import namedtuple
-from functools import wraps
+from functools import wraps, partial
 
 import yaml
 from bs4 import UnicodeDammit
@@ -25,7 +25,7 @@ def _log_async(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         loop = asyncio.get_event_loop()
-        return loop.run_in_executor (None, func, *args, **kwargs)
+        return loop.run_in_executor(None, partial(func, *args, **kwargs))
 
     return wrapper
 
@@ -54,27 +54,27 @@ class _LoggerAsync:
 
     @_log_async
     def debug(self, msg, *args, **kwargs):
-        self._logger.debug(msg, *args, **kwargs)
+        self._logger.debug(msg, *args, exc_info=False, stack_info=False, **kwargs)
 
     @_log_async
     def info(self, msg, *args, **kwargs):
-        self._logger.info(msg, *args, **kwargs)
+        self._logger.info(msg, *args, exc_info=False, stack_info=False, **kwargs)
 
     @_log_async
     def warning(self, msg, *args, **kwargs):
-        self._logger.warning(msg, *args, **kwargs)
+        self._logger.warning(msg, *args, exc_info=False, stack_info=False, **kwargs)
 
     @_log_async
     def error(self, msg, *args, **kwargs):
-        self._logger.error(msg, *args, **kwargs)
+        self._logger.error(msg, *args, exc_info=False, stack_info=False, **kwargs)
 
     @_log_async
     def exception(self, msg, *args, exc_info=True, **kwargs):
-        self._logger.exception(msg, *args, exc_info, **kwargs)
+        self._logger.exception(msg, *args, exc_info=False, stack_info=False, **kwargs)
 
     @_log_async
     def critical(self, msg, *args, **kwargs):
-        self._logger.critical(msg, *args, **kwargs)
+        self._logger.critical(msg, *args, exc_info=False, stack_info=False, **kwargs)
 
 logger = _LoggerAsync()
 
