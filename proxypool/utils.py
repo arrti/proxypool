@@ -31,7 +31,7 @@ def _log_async(func):
 
 
 class _LoggerAsync:
-    """Logger's async adapter.
+    """Logger's async proxy.
 
     Logging were executed in a thread pool executor to avoid blocking the event loop.
     """
@@ -85,6 +85,7 @@ def decode_html(html_string):
 
     Source: http://lxml.de/elementsoup.html#Using only the encoding detection
     """
+    
     converted = UnicodeDammit(html_string)
     if not converted.unicode_markup:
         raise UnicodeDecodeError(
@@ -100,6 +101,7 @@ async def page_download(url_gen, pages, flag):
         pages: asyncio.Queue object, save downloaded web pages.
         flag: asyncio.Event object, stop flag.
     """
+    
     async with aiohttp.ClientSession() as session:
         for url in url_gen:
             if flag.is_set():
@@ -129,6 +131,7 @@ async def page_download_phantomjs(url_gen, pages, element, flag):
         element: element for PhantomJS to check if page was loaded.
         flag: asyncio.Event object, stop flag.
     """
+    
     dcap = dict(DesiredCapabilities.PHANTOMJS)
     dcap["phantomjs.page.settings.userAgent"] = HEADERS
     browser = webdriver.PhantomJS(executable_path=PHANTOMJS_PATH, desired_capabilities=dcap)
