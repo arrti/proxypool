@@ -1,6 +1,7 @@
 import asyncio
 from math import ceil
 import time
+import traceback
 
 import aiohttp
 
@@ -68,8 +69,8 @@ def proxy_validator_run():
         logger.debug('regular validator started')
         try:
             loop.run_until_complete(validator.start())
-        except Exception as e:
-            logger.error(e, exc_info=True)
+        except Exception:
+            logger.error(traceback.format_exc())
         logger.debug('regular validator finished')
         time.sleep(VALIDATE_CYCLE_TIME)
 

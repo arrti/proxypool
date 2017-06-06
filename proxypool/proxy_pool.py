@@ -1,6 +1,7 @@
 import time
 import asyncio
 from random import random
+import traceback
 
 from proxypool.config import (UPPER_LIMIT, LOWER_LIMIT, CHECK_CYCLE_TIME,
                               CHECK_INTERVAL_TIME, VALIDATE_CYCLE_TIME, UPPER_LIMIT_RATIO)
@@ -75,14 +76,20 @@ class ProxyPool(object):
                 continue
 
             logger.debug('extend proxy pool started')
+            try:
+                d = {}
+                a = d['2']
+            except Exception:
+                logger.exception(traceback.format_exc())
+
             flag = asyncio.Event()
             try:
                 loop.run_until_complete(asyncio.gather(
                     ProxyPool.crawler_start(crawler, validator, proxies, flag),
                     ProxyPool.crawler_stop(crawler, conn, flag)
                 ))
-            except Exception as e:
-                logger.error(e, exc_info=True)
+            except Exception:
+                logger.error(traceback.format_exc())
 
             logger.debug('extend proxy pool finished')
             time.sleep(CHECK_INTERVAL_TIME)
