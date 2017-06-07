@@ -33,7 +33,7 @@ async def get_ip(request):
     try:
         ip = conn.get()
     except Exception as e:
-        ip = ''
+        ip = b''
         logger.error(e,
                      extra={'address': get_address(request), 'method': request.method})
 
