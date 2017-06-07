@@ -54,6 +54,8 @@ class ProxyValidator(object):
         else:
             proxies = await self._get_proxies()
             to_validate = [self.validate_one(proxies) for _ in range(proxies.qsize())]
+            if not to_validate:
+                return
 
         await asyncio.wait(to_validate)
 
