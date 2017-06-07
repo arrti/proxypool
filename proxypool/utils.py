@@ -95,6 +95,20 @@ def decode_html(html_string):
             ', '.join(converted.tried_encodings))
     return converted.unicode_markup
 
+async def _fetch(url, session):
+    await asyncio.sleep(uniform(DELAY - 0.5, DELAY + 1))
+    logger.debug('crawling proxy web page {0}'.format(url.content))
+    try:
+        async with session.get(url.content, headers=HEADERS, timeout=10) as response:
+            if response.status != 200:
+                raise aiohttp.errors.ClientConnectionError(
+                    'get {} return "{} {}"'.format(url.content, response.status, response.reason))
+            page = await response.text()
+            parsed = html.fromstring(decode_html(page))
+            return parsed
+    except asyncio.TimeoutError:
+        pass
+
 async def page_download(url_gen, pages, flag):
     """Download web page with aiohttp.
 
@@ -109,20 +123,17 @@ async def page_download(url_gen, pages, flag):
             if flag.is_set():
                 break
 
-            await asyncio.sleep(uniform(DELAY - 0.5, DELAY + 1))
-            logger.debug('crawling proxy web page {0}'.format(url.content))
+            parsed = None
             try:
-                async with session.get(url.content, headers=HEADERS, timeout=10) as response:
-                    page = await response.text()
-                    parsed = html.fromstring(decode_html(page))
-                    await pages.put(Result(parsed, url.rule))
-                    url_gen.send(parsed)
-            except StopIteration:
-                break
-            except asyncio.TimeoutError:
-                continue # TODO: use a proxy
+                parsed = await _fetch(url, session)
+                await pages.put(Result(parsed, url.rule))
             except Exception as e:
                 logger.error(e)
+            finally:
+                try:
+                    url_gen.send(parsed)
+                except StopIteration:
+                    break
 
 async def page_download_phantomjs(url_gen, pages, element, flag):
     """Download web page with PhantomJS.
