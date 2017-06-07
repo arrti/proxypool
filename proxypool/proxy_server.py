@@ -7,12 +7,11 @@ import traceback
 import yaml
 from aiohttp import web
 
-from proxypool.db import RedisClient as rc
+from proxypool.ext import conn
 from proxypool.config import HOST, PORT
 from proxypool.utils import PROJECT_ROOT, _LoggerAsync
 
 
-conn = rc()
 logger = _LoggerAsync(is_server=True)
 
 async def index(request):

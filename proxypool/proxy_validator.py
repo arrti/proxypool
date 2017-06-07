@@ -7,24 +7,22 @@ import aiohttp
 
 from proxypool.config import (VALIDATE_UPPER_LIMIT, VALIDATE_RATIO,
                               VALIDATE_CYCLE_TIME, VALIDATE_TIMEOUT, CORO_COUNT)
-from proxypool.db import RedisClient as rc
+from proxypool.ext import conn
 from proxypool.utils import logger
 
 
 class ProxyValidator(object):
     """Validate proxy before put it in proxy pool and proxies in pool regularly."""
 
-    def __init__(self, conn):
+    def __init__(self):
         self.validate_url = 'http://www.baidu.com/' # without headers should visit 'http://' not 'https://'
-        self._conn = conn
-
 
     async def _validator(self, proxy):
         async with aiohttp.ClientSession() as session:
             try:
                 real_proxy = 'http://' + proxy
                 async with session.get(self.validate_url, proxy=real_proxy, timeout=VALIDATE_TIMEOUT) as resp:
-                    self._conn.put(proxy)
+                    conn.put(proxy)
             except asyncio.TimeoutError:
                 pass
             except Exception as e:
@@ -37,8 +35,8 @@ class ProxyValidator(object):
             proxies.task_done()
 
     async def _get_proxies(self):
-        count = min(ceil(self._conn.count * VALIDATE_RATIO), VALIDATE_UPPER_LIMIT)
-        old_proxies = self._conn.get_list(count)
+        count = min(ceil(conn.count * VALIDATE_RATIO), VALIDATE_UPPER_LIMIT)
+        old_proxies = conn.get_list(count)
         valid_proxies = asyncio.Queue()
         for proxy in old_proxies:
             await valid_proxies.put(proxy.decode('utf-8'))
@@ -61,10 +59,9 @@ class ProxyValidator(object):
 
 
 def proxy_validator_run():
-    conn = rc()
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    validator = ProxyValidator(conn)
+    validator = ProxyValidator()
     while 1:
         logger.debug('regular validator started')
         try:

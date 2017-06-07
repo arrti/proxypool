@@ -5,7 +5,7 @@ import traceback
 
 from proxypool.config import (UPPER_LIMIT, LOWER_LIMIT, CHECK_CYCLE_TIME,
                               CHECK_INTERVAL_TIME, VALIDATE_CYCLE_TIME, UPPER_LIMIT_RATIO)
-from proxypool.db import RedisClient as rc
+from proxypool.ext import conn
 from proxypool.proxy_crawler import ProxyCrawler
 from proxypool.proxy_validator import ProxyValidator
 from proxypool.utils import logger
@@ -40,12 +40,11 @@ class ProxyPool(object):
     #     # loop.stop()
 
     @staticmethod
-    async def crawler_stop(crawler, conn, flag):
+    async def crawler_stop(crawler, flag):
         """Check proxies count if enough to stop proxy crawler.
 
         Args:
             crawler: ProxyCrawler object.
-            conn: redis connection.
             flag: asyncio.Event object, stop flag.
         """
         # await asyncio.sleep(10) # TODO
@@ -65,28 +64,22 @@ class ProxyPool(object):
     def extend_proxy_pool():
         """Check proxies count if need to extend proxy pool."""
 
-        conn = rc()
         loop = asyncio.get_event_loop()
         proxies = asyncio.Queue()
         crawler = ProxyCrawler(proxies)
-        validator = ProxyValidator(conn)
+        validator = ProxyValidator()
         while 1:
             if conn.count > LOWER_LIMIT:
                 time.sleep(CHECK_CYCLE_TIME)
                 continue
 
             logger.debug('extend proxy pool started')
-            try:
-                d = {}
-                a = d['2']
-            except Exception:
-                logger.exception(traceback.format_exc())
 
             flag = asyncio.Event()
             try:
                 loop.run_until_complete(asyncio.gather(
                     ProxyPool.crawler_start(crawler, validator, proxies, flag),
-                    ProxyPool.crawler_stop(crawler, conn, flag)
+                    ProxyPool.crawler_stop(crawler, flag)
                 ))
             except Exception:
                 logger.error(traceback.format_exc())
