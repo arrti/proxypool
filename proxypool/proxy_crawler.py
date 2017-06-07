@@ -16,7 +16,7 @@ class ProxyCrawler(object):
             rules: crawler rules of each proxy web, should be iterable object
             flag: stop flag for page downloading
         """
-        
+
         self._proxies = proxies
         self._stop_flag = asyncio.Event() # stop flag for crawler, not for validator
         self._pages = asyncio.Queue()
