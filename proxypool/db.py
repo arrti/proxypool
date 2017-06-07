@@ -17,7 +17,7 @@ class RedisClient(object):
         """Pop one proxy from pool.
 
         Returns:
-             str type proxy, like: '175.155.24.67:808'.
+             byte type proxy, like: b'175.155.24.67:808'.
 
         Raises:
             ProxyPoolEmptyError.
