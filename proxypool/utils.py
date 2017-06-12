@@ -98,16 +98,14 @@ def decode_html(html_string):
 async def _fetch(url, session):
     await asyncio.sleep(uniform(DELAY - 0.5, DELAY + 1))
     logger.debug('crawling proxy web page {0}'.format(url.content))
-    try:
-        async with session.get(url.content, headers=HEADERS, timeout=10) as response:
-            if response.status != 200:
-                raise aiohttp.errors.ClientConnectionError(
-                    'get {} return "{} {}"'.format(url.content, response.status, response.reason))
-            page = await response.text()
-            parsed = html.fromstring(decode_html(page))
-            return parsed
-    except asyncio.TimeoutError:
-        pass
+
+    async with session.get(url.content, headers=HEADERS, timeout=10) as response:
+        if response.status != 200:
+            raise aiohttp.errors.ClientConnectionError(
+                'get {} return "{} {}"'.format(url.content, response.status, response.reason))
+        page = await response.text()
+        parsed = html.fromstring(decode_html(page))
+        return parsed
 
 async def page_download(url_gen, pages, flag):
     """Download web page with aiohttp.
@@ -126,9 +124,12 @@ async def page_download(url_gen, pages, flag):
             parsed = None
             try:
                 parsed = await _fetch(url, session)
-                await pages.put(Result(parsed, url.rule))
+            except asyncio.TimeoutError:
+                pass
             except Exception as e:
                 logger.error(e)
+            else:
+                await pages.put(Result(parsed, url.rule))
             finally:
                 try:
                     url_gen.send(parsed)
