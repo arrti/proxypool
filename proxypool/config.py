@@ -21,7 +21,7 @@ UPPER_LIMIT_RATIO = 0.85
 
 # check and validate
 CHECK_CYCLE_TIME = 900     # the cycle of check proxies count
-CHECK_INTERVAL_TIME = 600  # the time between crawler finished and next check
+CHECK_INTERVAL_TIME = 1200  # the time between crawler finished and next check
 VALIDATE_CYCLE_TIME = 600 # the cycle of validate proxies in pool
 VALIDATE_UPPER_LIMIT = 200
 VALIDATE_RATIO = 0.25      # validated proxies ratio in pool each time
