@@ -56,6 +56,8 @@ class _LoggerAsync:
 
     @_log_async
     def debug(self, msg, *args, **kwargs):
+        # send this to another thread would lost context, so 'exc_info' and 'stack_info' was False,
+        # use traceback module to get them as 'msg'
         self._logger.debug(msg, *args, exc_info=False, stack_info=False, **kwargs)
 
     @_log_async
