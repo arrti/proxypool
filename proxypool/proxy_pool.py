@@ -24,6 +24,7 @@ class ProxyPool(object):
             proxies: asyncio.Queue object, crawler put proxy and validator get proxy.
             flag: asyncio.Event object, stop flag for 'crawler_stop' function.
         """
+
         logger.debug('proxy crawler started')
         logger.debug('validator started')
         valid = asyncio.ensure_future(validator.start(proxies))
@@ -34,11 +35,6 @@ class ProxyPool(object):
         flag.set()
         logger.debug('proxy crawler finished')
 
-    # @staticmethod
-    # def crawler_done(loop, future):
-    #     logger.debug('event loop was stopping because {0}'.format(future.result()))
-    #     # loop.stop()
-
     @staticmethod
     async def crawler_stop(crawler, flag):
         """Check proxies count if enough to stop proxy crawler.
@@ -47,7 +43,7 @@ class ProxyPool(object):
             crawler: ProxyCrawler object.
             flag: asyncio.Event object, stop flag.
         """
-        # await asyncio.sleep(10) # TODO
+
         while 1:
 
             if conn.count > int(UPPER_LIMIT * UPPER_LIMIT_RATIO):
