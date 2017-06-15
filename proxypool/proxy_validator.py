@@ -22,7 +22,8 @@ class ProxyValidator(object):
             try:
                 real_proxy = 'http://' + proxy
                 async with session.get(self.validate_url, proxy=real_proxy, timeout=VALIDATE_TIMEOUT) as resp:
-                    conn.put(proxy)
+                    if resp.status == 200:
+                        conn.put(proxy)
             except asyncio.TimeoutError:
                 pass
             except Exception as e:
