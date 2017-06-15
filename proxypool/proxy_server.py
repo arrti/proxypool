@@ -3,6 +3,7 @@ import logging.config
 import asyncio
 import os.path
 import traceback
+import json
 
 import yaml
 from aiohttp import web
@@ -27,18 +28,25 @@ async def index(request):
     return web.Response(body=cache, content_type='text/html')
 
 async def get_ip(request):
+    """get single proxy.
+
+    return json data like: "{'count': 1, 'proxies': ['127.0.0.1']}"
+    """
     logger.debug('requested ip',
                  extra={'address': get_address(request), 'method': request.method})
     try:
-        ip = conn.get()
+        ip = [conn.get().decode('utf-8')]
     except Exception as e:
-        ip = b''
+        ip = []
         logger.error(e,
                      extra={'address': get_address(request), 'method': request.method})
-
-    return web.Response(text=ip.decode('utf-8')) # bytes type data from redis
+    return web.Response(text=jsonify(ip), content_type='application/json') # bytes type data from redis
 
 async def get_ip_list(request):
+    """get multi proxies.
+
+    return json data like: "{'count': 10, 'proxies': ['192.168.0.1', ..., '192.168.0.10']}"
+    """
     req_count = request.match_info['count']
     rsp_count = min(int(req_count), conn.count) # TODO: set an upper limit
     result = conn.get_list(rsp_count)
@@ -50,12 +58,16 @@ async def get_ip_list(request):
         rsp_count = 0
     logger.debug('requested ip list count = {0} while return count = {1}'.format(req_count, rsp_count),
                  extra={'address': get_address(request), 'method': request.method})
-    return web.Response(text=str(ip_list))
+    return web.Response(text=jsonify(ip_list), content_type='application/json')
 
 async def get_count(request):
+    """get proxy count in pool.
+
+    return json data like: "{'count': 42, 'proxies': []}"
+    """
     logger.debug('requested proxy pool count',
                  extra={'address': get_address(request), 'method': request.method})
-    return web.Response(text=str(conn.count))
+    return web.Response(text=jsonify([], conn.count), content_type='application/json')
 
 def get_address(request):
     peername = request.transport.get_extra_info('peername')
@@ -64,6 +76,16 @@ def get_address(request):
         return '{0}:{1}'.format(host, port)
 
     return ''
+
+def jsonify(ip, count=None):
+    jsons = {}
+    jsons['count'] = len(ip)
+    jsons['proxies'] = ip
+
+    if count:
+        jsons['count'] = count
+
+    return json.dumps(jsons)
 
 async def init(loop):
     app = web.Application(loop=loop)
