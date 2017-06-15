@@ -1,7 +1,9 @@
-from proxypool.errors import ProxyPoolEmptyError
-import pytest
 import os.path
 import time
+
+import pytest
+
+from proxypool.errors import ProxyPoolEmptyError
 
 
 slow = pytest.mark.skipif(

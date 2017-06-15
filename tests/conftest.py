@@ -1,7 +1,7 @@
-import pytest
 from pathlib import Path
 import sys
 
+import pytest
 
 # add project path to sys.path in case 'proxypool' was not installed
 current = Path(__file__).parent.parent

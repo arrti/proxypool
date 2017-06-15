@@ -1,8 +1,10 @@
+from multiprocessing import Process
+
+import pytest
+import requests
+
 import proxypool.proxy_server as proxy_server
 from proxypool.config import HOST, PORT
-import pytest
-from multiprocessing import Process
-import requests
 
 
 @pytest.fixture

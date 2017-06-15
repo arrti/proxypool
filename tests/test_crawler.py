@@ -1,8 +1,10 @@
-from proxypool.proxy_crawler import proxy_crawler_test_run
-import pytest
 import asyncio
 from multiprocessing import Process, Value
 from ctypes import c_int
+
+import pytest
+
+from proxypool.proxy_crawler import proxy_crawler_test_run
 
 
 phantomjs = pytest.mark.skipif(
