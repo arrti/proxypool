@@ -99,7 +99,7 @@
 ### server
 启动server后，访问`http://host:port/`（`host`、`port`定义在`proxypool/config.py`中）来检测是否成功运行，成功后，通过
 * 访问`http://host:port/proxies/`来从代理池获取1个代理，如：`{"count": 1, "proxies": ["127.0.0.1:808"]}`；
-* 访问`http://host:port/proxies/n`来从代理池获取n个代理，如：`{"count": 3, "proxies": ['127.0.0.1:1080', '127.0.0.1:443', '127.0.0.1:80']}`；
+* 访问`http://host:port/proxies/n`来从代理池获取n个代理，如：`{"count": 3, "proxies": ["127.0.0.1:1080", "127.0.0.1:443", "127.0.0.1:80"]}`；
 * 访问`http://host:port/proxies/count`来获取代理池的容量，如：`{"count": 355, "proxies": []}`。
 
 返回的数据都是JSON格式的。
