@@ -20,15 +20,15 @@ def api(db):
 def test_server_get(db, api):
     proxies = ['127.0.0.1:80', '127.0.0.1:443', '127.0.0.1:1080']
 
-    assert requests.get('{}/get'.format(api)).json()['proxies'][0] in proxies
+    assert requests.get('{}/proxies/'.format(api)).json()['proxies'][0] in proxies
 
-    assert requests.get('{}/get/proxy'.format(api)).status_code == 404
+    assert requests.get('{}/proxies/proxy'.format(api)).status_code == 404
 
-    assert requests.get('{}/get/0'.format(api)).json()['count'] == 0
+    assert requests.get('{}/proxies/0'.format(api)).json()['count'] == 0
 
-    assert requests.get('{}/get/3'.format(api)).json()['proxies'].sort() == proxies.sort()
+    assert requests.get('{}/proxies/3'.format(api)).json()['proxies'].sort() == proxies.sort()
 
-    assert requests.get('{}/get/10'.format(api)).json()['proxies'].sort() == proxies.sort()
+    assert requests.get('{}/proxies/10'.format(api)).json()['proxies'].sort() == proxies.sort()
 
-    assert db.count == requests.get('{}/count'.format(api)).json()['count']
+    assert db.count == requests.get('{}/proxies/count'.format(api)).json()['count']
 

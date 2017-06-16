@@ -48,6 +48,8 @@ async def get_ip_list(request):
     return json data like: "{'count': 10, 'proxies': ['192.168.0.1', ..., '192.168.0.10']}"
     """
     req_count = request.match_info['count']
+    if not req_count:
+        req_count = 1
     rsp_count = min(int(req_count), conn.count)
     result = conn.get_list(rsp_count)
     if result:
@@ -90,9 +92,9 @@ def jsonify(ip, count=None):
 async def init(loop):
     app = web.Application(loop=loop)
     app.router.add_route('GET', '/', index)
-    app.router.add_route('GET', '/get', get_ip)
-    app.router.add_route('GET', '/get/{count:\d+}', get_ip_list)
-    app.router.add_route('GET', '/count', get_count)
+    resource = app.router.add_resource(r'/proxies/{count:\d*}', name='proxy-get')
+    resource.add_route('GET', get_ip_list)
+    app.router.add_route('GET', '/proxies/count', get_count)
     app.router.add_static('/css/',
                           path=str(PROJECT_ROOT / 'static/css'),
                           name='css')
