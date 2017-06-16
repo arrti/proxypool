@@ -20,4 +20,4 @@ def pytest_addoption(parser):
 @pytest.fixture(scope='session')
 def db():
     from proxypool.db import RedisClient as rc
-    return rc('127.0.0.1', '6379') # make sure this redis instance was running before testing
+    return rc('127.0.0.1', 6379) # make sure this redis instance was running before testing
