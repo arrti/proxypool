@@ -54,6 +54,9 @@ class RedisClient(object):
         return proxy
 
     def get_list(self, count=1):
+        if count <= 0:
+            return None
+
         proxies = self.pop_list(count)
         if proxies:
             self.put_list(proxies)
