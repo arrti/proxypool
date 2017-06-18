@@ -24,8 +24,8 @@ def api(db):
 
 def test_server_get(db, api):
     proxies = ['127.0.0.1:80', '127.0.0.1:443', '127.0.0.1:1080']
-    verify = SSL_ON
-    if CA_CRT:
+    verify = True
+    if SSL_ON and CA_CRT:
         verify = CA_CRT
 
     assert requests.get('{}/proxies/'.format(api),
