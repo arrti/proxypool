@@ -4,7 +4,6 @@ import asyncio
 import os.path
 import traceback
 import json
-import ssl
 
 import yaml
 from aiohttp.web import Application, Response, run_app
@@ -92,14 +91,19 @@ def jsonify(ip, count=None):
     return json.dumps(jsons)
 
 def get_ssl_context():
-    context = ssl.SSLContext()
-    context.load_cert_chain(CERT, KEY, PASSWORD)
-    if CA_CRT:
-        context.load_verify_locations(CA_CRT)
+    try:
+        import ssl
+    except ImportError:
+        raise
     else:
-        context.load_default_certs(ssl.Purpose.CLIENT_AUTH)
-    context.verify_mode = ssl.CERT_OPTIONAL
-    return context
+        context = ssl.SSLContext()
+        context.load_cert_chain(CERT, KEY, PASSWORD)
+        if CA_CRT:
+            context.load_verify_locations(CA_CRT)
+        else:
+            context.load_default_certs(ssl.Purpose.CLIENT_AUTH)
+        context.verify_mode = ssl.CERT_OPTIONAL
+        return context
 
 def init(loop):
     app = Application(loop=loop)
