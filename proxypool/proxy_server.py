@@ -1,11 +1,8 @@
-import logging
-import logging.config
 import asyncio
 import os.path
 import traceback
 import json
 
-import yaml
 from aiohttp.web import Application, Response, run_app
 
 from proxypool.ext import conn
@@ -135,8 +132,6 @@ def server_run():
     try:
         logger.debug('server started at http://{0}:{1}...'.format(HOST, PORT),
                      extra={'address': '', 'method': ''})
-        # loop.run_until_complete(init(loop))
-        # loop.run_forever()
         init(loop)
     except:
         logger.error(traceback.format_exc(), extra={'address': '', 'method': ''})
