@@ -102,7 +102,10 @@
 * 访问`http://host:port/proxies/n`来从代理池获取n个代理，如：`{"count": 3, "proxies": ["127.0.0.1:1080", "127.0.0.1:443", "127.0.0.1:80"]}`；
 * 访问`http://host:port/proxies/count`来获取代理池的容量，如：`{"count": 355, "proxies": []}`。
 
-返回的数据都是JSON格式的。
+返回的数据都是JSON格式的。   
+支持SSL，在`proxypool/config.py`将`SSL_ON`设置为`True`，设置服务器对应的证书`CERT`、密钥`KEY`以及CA`CA_CRT`路径，使用系统CA则将
+`CA_CRT`设为`None`，可以参考`SSL`模块的[文档](https://docs.python.org/3.6/library/ssl.html#ssl.SSLContext)。
+设置成功后即可通过`https`访问server。
 
 ### supervisord
 Linux下可以使用supervisord来管理python进程，首先修改`supervisord/supervisord.conf`文件中的3个`command`中的路径，
@@ -118,3 +121,6 @@ Linux下可以使用supervisord来管理python进程，首先修改`supervisord/
 ## 更新
 * 2017.6.1  
 现在可以正确实现并发了。能够并发地爬取所有的代理网站、验证代理的有效性，日志的I/O操作也不会阻塞事件循环了。按照现有的5个规则爬取一次这5个代理网站现在用时**不到3分钟**，而之前仅爬取西祠就需要1个小时。
+
+* 2017.6.18
+添加SSL支持。
