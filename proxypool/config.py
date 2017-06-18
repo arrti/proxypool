@@ -4,7 +4,7 @@ from random import choice
 VERBOSE = True
 
 # server
-HOST = 'localhost'
+HOST = '0.0.0.0'
 PORT = 8088
 SERVER_ON = False
 
