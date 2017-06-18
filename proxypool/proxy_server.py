@@ -4,12 +4,14 @@ import asyncio
 import os.path
 import traceback
 import json
+import ssl
 
 import yaml
-from aiohttp import web
+from aiohttp.web import Application, Response, run_app
 
 from proxypool.ext import conn
-from proxypool.config import HOST, PORT
+from proxypool.config import (HOST, PORT, SSL_ON, CERT,
+                              KEY, PASSWORD, CA_CRT)
 from proxypool.utils import PROJECT_ROOT, _LoggerAsync
 
 
@@ -25,7 +27,7 @@ async def index(request):
         cache, last = conn.get_cache(name)
     logger.debug('requested index page',
                  extra={'address': get_address(request), 'method': request.method})
-    return web.Response(body=cache, content_type='text/html')
+    return Response(body=cache, content_type='text/html')
 
 async def get_ip(request):
     """get single proxy.
@@ -40,7 +42,7 @@ async def get_ip(request):
         ip = []
         logger.error(e,
                      extra={'address': get_address(request), 'method': request.method})
-    return web.Response(text=jsonify(ip), content_type='application/json') # bytes type data from redis
+    return Response(text=jsonify(ip), content_type='application/json') # bytes type data from redis
 
 async def get_ip_list(request):
     """get multi proxies.
@@ -60,7 +62,7 @@ async def get_ip_list(request):
         rsp_count = 0
     logger.debug('requested ip list count = {0} while return count = {1}'.format(req_count, rsp_count),
                  extra={'address': get_address(request), 'method': request.method})
-    return web.Response(text=jsonify(ip_list), content_type='application/json')
+    return Response(text=jsonify(ip_list), content_type='application/json')
 
 async def get_count(request):
     """get proxy count in pool.
@@ -69,7 +71,7 @@ async def get_count(request):
     """
     logger.debug('requested proxy pool count',
                  extra={'address': get_address(request), 'method': request.method})
-    return web.Response(text=jsonify([], conn.count), content_type='application/json')
+    return Response(text=jsonify([], conn.count), content_type='application/json')
 
 def get_address(request):
     peername = request.transport.get_extra_info('peername')
@@ -89,8 +91,18 @@ def jsonify(ip, count=None):
 
     return json.dumps(jsons)
 
-async def init(loop):
-    app = web.Application(loop=loop)
+def get_ssl_context():
+    context = ssl.SSLContext()
+    context.load_cert_chain(CERT, KEY, PASSWORD)
+    if CA_CRT:
+        context.load_verify_locations(CA_CRT)
+    else:
+        context.load_default_certs(ssl.Purpose.CLIENT_AUTH)
+    context.verify_mode = ssl.CERT_OPTIONAL
+    return context
+
+def init(loop):
+    app = Application(loop=loop)
     app.router.add_route('GET', '/', index)
     resource = app.router.add_resource(r'/proxies/{count:\d*}', name='proxy-get')
     resource.add_route('GET', get_ip_list)
@@ -101,8 +113,12 @@ async def init(loop):
     app.router.add_static('/font/',
                           path=str(PROJECT_ROOT / 'static/font'),
                           name='font')
-    srv = await loop.create_server(app.make_handler(), HOST, PORT)
-    return srv
+    if SSL_ON:
+        ssl_context = get_ssl_context()
+    else:
+        ssl_context = None
+    run_app(app, host=HOST, port=PORT, ssl_context=ssl_context)
+
 
 def setup_cache(path, name, mtime, expire=-1):
     with open(path, 'r') as f:
@@ -115,8 +131,9 @@ def server_run():
     try:
         logger.debug('server started at http://{0}:{1}...'.format(HOST, PORT),
                      extra={'address': '', 'method': ''})
-        loop.run_until_complete(init(loop))
-        loop.run_forever()
+        # loop.run_until_complete(init(loop))
+        # loop.run_forever()
+        init(loop)
     except:
         logger.error(traceback.format_exc(), extra={'address': '', 'method': ''})
     finally:

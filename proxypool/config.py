@@ -4,9 +4,15 @@ from random import choice
 VERBOSE = True
 
 # server
-HOST = '127.0.0.1'
-PORT = '8088'
+HOST = 'localhost'
+PORT = 8088
 SERVER_ON = False
+
+SSL_ON = False
+CERT = '/path/to/your/server.crt'
+KEY = '/path/to/your/server.key'
+PASSWORD = None
+CA_CRT = '/path/to/your/ca.crt'
 
 # redis
 REDIS_HOST = '127.0.0.1'
