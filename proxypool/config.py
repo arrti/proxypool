@@ -13,6 +13,10 @@ CERT = '/path/to/your/server.crt'
 KEY = '/path/to/your/server.key'
 PASSWORD = None
 CA_CRT = '/path/to/your/ca.crt'
+if SSL_ON:
+    SCHEME = 'https'
+else:
+    SCHEME = 'http'
 
 # redis
 REDIS_HOST = '127.0.0.1'

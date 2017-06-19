@@ -7,7 +7,7 @@ from aiohttp.web import Application, Response, run_app
 
 from proxypool.ext import conn
 from proxypool.config import (HOST, PORT, SSL_ON, CERT,
-                              KEY, PASSWORD, CA_CRT)
+                              KEY, PASSWORD, CA_CRT, SCHEME)
 from proxypool.utils import PROJECT_ROOT, _LoggerAsync
 
 
@@ -130,7 +130,7 @@ def setup_cache(path, name, mtime, expire=-1):
 def server_run():
     loop = asyncio.get_event_loop()
     try:
-        logger.debug('server started at http://{0}:{1}...'.format(HOST, PORT),
+        logger.debug('server started at {}://{}:{}...'.format(SCHEME, HOST, PORT),
                      extra={'address': '', 'method': ''})
         init(loop)
     except:
