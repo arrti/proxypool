@@ -1,12 +1,14 @@
 import asyncio
 from math import ceil
+from random import choice
 import time
 import traceback
 
 import aiohttp
 
 from proxypool.config import (VALIDATE_UPPER_LIMIT, VALIDATE_RATIO,
-                              VALIDATE_CYCLE_TIME, VALIDATE_TIMEOUT, CORO_COUNT)
+                              VALIDATE_CYCLE_TIME, VALIDATE_TIMEOUT, CORO_COUNT,
+                              HEADERS, USER_AGENT)
 from proxypool.ext import conn
 from proxypool.utils import logger
 
@@ -15,13 +17,15 @@ class ProxyValidator(object):
     """Validate proxy before put it in proxy pool and proxies in pool regularly."""
 
     def __init__(self):
-        self.validate_url = 'http://www.baidu.com/' # without headers should visit 'http://' not 'https://'
+        self.validate_url = 'https://www.baidu.com/' # without headers should visit 'http://' not 'https://'
 
     async def _validator(self, proxy):
+        HEADERS['User-Agent'] = choice(USER_AGENT)
         async with aiohttp.ClientSession() as session:
             try:
                 real_proxy = 'http://' + proxy
-                async with session.get(self.validate_url, proxy=real_proxy, timeout=VALIDATE_TIMEOUT) as resp:
+                async with session.get(self.validate_url, headers=HEADERS,
+                                       proxy=real_proxy, timeout=VALIDATE_TIMEOUT) as resp:
                     if resp.status == 200:
                         conn.put(proxy)
             except asyncio.TimeoutError:
