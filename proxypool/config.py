@@ -2,6 +2,7 @@ from random import choice
 
 # output to stdout
 VERBOSE = True
+SEND_MAIL = True
 
 # server
 HOST = '0.0.0.0'
