@@ -19,8 +19,6 @@ phantomjs = pytest.mark.skipif(
 
 @pytest.fixture(scope='module')
 def rule():
-    # monkeypatch.syspath_prepend(Path(__file__).parent)
-    # print(Path(__file__).parent)
     TESTS_PATH = Path(__file__).parent
 
     class TestRule:
