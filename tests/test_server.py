@@ -1,4 +1,6 @@
 from multiprocessing import Process
+import os
+import signal
 from time import sleep
 
 import pytest
@@ -15,12 +17,15 @@ def api(db):
     server = Process(target=proxy_server.server_run)
     server.start()
     sleep(0.5)
+
     if SSL_ON:
         yield 'https://{0}:{1}'.format(HOST, PORT)
     else:
         yield 'http://{0}:{1}'.format(HOST, PORT)
+
     db.pop_list(3)
-    server.terminate()
+    os.kill(server.pid, signal.SIGQUIT) # should be QUIT if tested with test_crawler
+    server.join()
 
 def test_server_get(db, api):
     proxies = ['127.0.0.1:80', '127.0.0.1:443', '127.0.0.1:1080']
