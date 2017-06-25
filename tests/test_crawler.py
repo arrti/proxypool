@@ -1,10 +1,15 @@
 import asyncio
 from multiprocessing import Process, Value
 from ctypes import c_int
+from pathlib import Path
+import os
+import signal
 
+from aiohttp.web import Application, Response, run_app
 import pytest
 
 from proxypool.proxy_crawler import proxy_crawler_test_run
+from proxypool.config import HOST, PORT
 
 
 phantomjs = pytest.mark.skipif(
@@ -12,28 +17,64 @@ phantomjs = pytest.mark.skipif(
     reason="need --runptjs option to run"
 )
 
-class TestRule(object):
-    start_url =  'http://www.xicidaili.com/nn/'
-    page_count = 2
-    urls_format = '{0}{1}'
-    next_page_xpath = '//div[@class="pagination"]/a[@class="next_page"]/@href'
-    next_page_host = 'http://www.xicidaili.com'
+@pytest.fixture(scope='module')
+def rule():
+    # monkeypatch.syspath_prepend(Path(__file__).parent)
+    # print(Path(__file__).parent)
+    TESTS_PATH = Path(__file__).parent
 
-    use_phantomjs = False
-    phantomjs_load_flag = None
+    class TestRule:
+        start_url = 'http://{}:{}/nn/'.format(HOST, PORT)
+        page_count = 3
+        urls_format = '{0}{1}'
+        next_page_xpath = '//div[@class="pagination"]/a[@class="next_page"]/@href'
+        next_page_host = 'http://{}:{}'.format(HOST, PORT)
 
-    __rule_name__ = 'testrule'
+        use_phantomjs = False
+        phantomjs_load_flag = None
 
-    filters = None
+        __rule_name__ = 'testrule'
 
-    ip_xpath   = '//td[2]'
-    port_xpath = '//td[3]'
+        filters = None
+
+        ip_xpath = '//td[2]'
+        port_xpath = '//td[3]'
+
+    async def proxy(request):
+        page = request.match_info['page']
+        if not page:
+            path = '{}/pages/page_1.html'.format(TESTS_PATH)
+        else:
+            path = '{}/pages/page_{}.html'.format(TESTS_PATH, page)
+
+        page = b"<html><body><pre>404: Not Found</pre></body></html>"
+        try:
+            with open(path, 'rb') as f:
+                page = f.read()
+        except:
+            return Response(status=404, reason='Not Found', body=page, content_type='text/html')
+        else:
+            return Response(body=page, content_type='text/html')
+
+    def start():
+        app = Application()
+        resource = app.router.add_resource(r'/nn/{page:\d*}', name='proxy-get')
+        resource.add_route('GET', proxy)
+        run_app(app, host=HOST, port=PORT)
+
+    server = Process(target=start)
+    server.start()
+
+    yield TestRule
+
+    os.kill(server.pid, signal.SIGINT)
+    server.join()
 
 
-def test_proxy_crawler():
+def test_proxy_crawler(rule):
     queue = asyncio.Queue()
-    rule1 = TestRule()
-    rule2 = TestRule()
+    rule1 = rule()
+    rule2 = rule()
     rule2.urls_format = None
 
     count = Value(c_int)
@@ -45,9 +86,9 @@ def test_proxy_crawler():
     assert count.value == 400
 
 @phantomjs
-def test_proxy_crawler_phantomjs():
+def test_proxy_crawler_phantomjs(rule):
     queue = asyncio.Queue()
-    rule = TestRule()
+    rule = rule()
     rule.use_phantomjs = True
     rule.phantomjs_load_flag = '<table id="ip_list">'
 
