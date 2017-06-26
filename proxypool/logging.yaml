@@ -27,7 +27,7 @@ handlers:
 loggers:
   console_logger:
     level: DEBUG
-    handlers: [console, file]
+    handlers: [console]
     propagate: no
   file_logger:
     level: DEBUG
