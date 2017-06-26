@@ -14,20 +14,20 @@ handlers:
     class: logging.handlers.RotatingFileHandler
     level: DEBUG
     formatter: simple
-    filename: /var/log/proxypool/pool.log
+    filename: /tmp/pool.log
     maxBytes: 5120000
     backupCount: 5
   server:
     class: logging.handlers.RotatingFileHandler
     level: DEBUG
     formatter: network
-    filename: /var/log/proxypool/server.log
+    filename: /tmp/server.log
     maxBytes: 5120000
     backupCount: 10
 loggers:
   console_logger:
     level: DEBUG
-    handlers: [console]
+    handlers: [console, file]
     propagate: no
   file_logger:
     level: DEBUG
